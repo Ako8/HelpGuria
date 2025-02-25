@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///requests.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/requests.db'
 app.config['SECRET_KEY'] = 'ugyuvhjbguyfucgvhjyftycgvhhoijpjiugiytydrtyfyguihoj'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -111,10 +111,9 @@ def delete_request(request_id):
 
 @app.route('/api/requests')
 def get_requests():
-    """API endpoint to get all help requests"""
     try:
-        requests = HelpRequest.query.all()  # Fetch all help requests
-        return jsonify([request.as_dict() for request in requests])  # Convert each to a dict
+        requests = HelpRequest.query.all()
+        return jsonify([request.as_dict() for request in requests])
     except Exception as e:
         return jsonify({"status": "error", "message": f"Database error: {e}"}), 500
 
