@@ -1,0 +1,239 @@
+{% extends "layout.html" %} {% block head %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGIwXZjzw9S65v0NNG6MH_QwOCIZj4kWI&libraries=places"></script>
+<script>
+  let map;
+  let marker;
+
+  function initMap() {
+    // Default location (Tbilisi, Georgia)
+    const defaultLocation = { lat: 41.7151, lng: 44.8271 };
+
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 13,
+      center: defaultLocation,
+    });
+
+    // Try to get user's location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          map.setCenter(userLocation);
+          placeMarker(userLocation);
+
+          // Update form with coordinates
+          document.getElementById("latitude").value = userLocation.lat;
+          document.getElementById("longitude").value = userLocation.lng;
+
+          // Try to get address
+          getAddressFromCoordinates(userLocation);
+        },
+        () => {
+          // If geolocation failed
+          alert(
+            "ვერ მოხერხდა თქვენი მდებარეობის განსაზღვრა. გთხოვთ, დააჭირეთ რუკაზე თქვენი მდებარეობის მოსანიშნად."
+          );
+        }
+      );
+    } else {
+      alert(
+        "თქვენს ბრაუზერს არ აქვს გეოლოკაციის მხარდაჭერა. გთხოვთ, დააჭირეთ რუკაზე თქვენი მდებარეობის მოსანიშნად."
+      );
+    }
+
+    // Add click event to map
+    map.addListener("click", (event) => {
+      placeMarker(event.latLng);
+
+      // Update form with coordinates
+      document.getElementById("latitude").value = event.latLng.lat();
+      document.getElementById("longitude").value = event.latLng.lng();
+
+      // Get address for the selected location
+      getAddressFromCoordinates(event.latLng);
+    });
+  }
+
+  function placeMarker(location) {
+    if (marker) {
+      marker.setPosition(location);
+    } else {
+      marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        draggable: true,
+      });
+
+      // Update form when marker is dragged
+      marker.addListener("dragend", () => {
+        const position = marker.getPosition();
+        document.getElementById("latitude").value = position.lat();
+        document.getElementById("longitude").value = position.lng();
+
+        // Get address for the new position
+        getAddressFromCoordinates(position);
+      });
+    }
+  }
+
+  function getAddressFromCoordinates(location) {
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: location }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        document.getElementById("location").value =
+          results[0].formatted_address;
+      }
+    });
+  }
+
+  function submitRequest(event) {
+    event.preventDefault();
+
+    // Show loading spinner
+    document.getElementById("submit-btn").disabled = true;
+    document.getElementById("submit-spinner").style.display = "inline-block";
+
+    const formData = new FormData(document.getElementById("request-form"));
+
+    fetch("/submit_request", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Hide spinner
+        document.getElementById("submit-btn").disabled = false;
+        document.getElementById("submit-spinner").style.display = "none";
+
+        if (data.status === "success") {
+          // Show success message
+          document.getElementById("success-alert").style.display = "block";
+          document.getElementById("error-alert").style.display = "none";
+
+          // Clear form
+          document.getElementById("request-form").reset();
+
+          // Scroll to top
+          window.scrollTo(0, 0);
+
+          // Hide success message after 5 seconds
+          setTimeout(() => {
+            document.getElementById("success-alert").style.display = "none";
+          }, 5000);
+        } else {
+          // Show error message
+          document.getElementById("error-message").textContent = data.message;
+          document.getElementById("error-alert").style.display = "block";
+          document.getElementById("success-alert").style.display = "none";
+        }
+      })
+      .catch((error) => {
+        // Hide spinner
+        document.getElementById("submit-btn").disabled = false;
+        document.getElementById("submit-spinner").style.display = "none";
+
+        // Show error message
+        document.getElementById("error-message").textContent =
+          "ქსელის შეცდომა. გთხოვთ სცადოთ თავიდან.";
+        document.getElementById("error-alert").style.display = "block";
+        document.getElementById("success-alert").style.display = "none";
+      });
+  }
+
+  window.onload = initMap;
+</script>
+{% endblock %} {% block content %}
+<div class="alert alert-success" id="success-alert" style="display: none">
+  თქვენი დახმარების მოთხოვნა წარმატებით გაიგზავნა. ვიღაც მალე დაგიკავშირდებათ.
+</div>
+
+<div class="alert alert-danger" id="error-alert" style="display: none">
+  <span id="error-message"
+    >შეცდომა თხოვნის გაგზავნისას. გთხოვთ სცადოთ თავიდან.</span
+  >
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="card-title mb-4">საგანგებო დახმარების მოთხოვნა</h2>
+        <p class="card-text">
+          გამოიყენეთ ქვემოთ მოცემული რუკა თქვენი მდებარეობის მოსანიშნად, შემდეგ
+          შეავსეთ ფორმა დახმარების მოსათხოვნად.
+        </p>
+
+        <div id="map"></div>
+
+        <form id="request-form" onsubmit="submitRequest(event)">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="name" class="form-label">თქვენი სახელი *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="contact" class="form-label"
+                >საკონტაქტო ინფორმაცია (ტელეფონი/ელფოსტა) *</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="contact"
+                name="contact"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="location" class="form-label"
+              >მდებარეობის მისამართი *</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="location"
+              name="location"
+              required
+            />
+            <input type="hidden" id="latitude" name="latitude" />
+            <input type="hidden" id="longitude" name="longitude" />
+          </div>
+
+          <div class="mb-3">
+            <label for="message" class="form-label"
+              >რაში გჭირდებათ დახმარება? *</label
+            >
+            <textarea
+              class="form-control"
+              id="message"
+              name="message"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            დახმარების მოთხოვნის გაგზავნა
+            <span
+              id="submit-spinner"
+              class="spinner-border spinner-border-sm ms-1"
+              style="display: none"
+            ></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
