@@ -50,19 +50,6 @@ class HelpRequest(db.Model):
         }
 
 
-# Initialize the database
-def init_db():
-    with app.app_context():
-        try:
-            db.create_all()  # Create tables based on models
-            print("Database initialized successfully")
-        except Exception as e:
-            print(f"Database initialization failed: {e}")
-
-
-# Initialize the database when the app starts
-
-
 @app.route('/')
 def index():
     """Home page with map for submitting help requests"""
@@ -139,5 +126,4 @@ def health_check():
 
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
