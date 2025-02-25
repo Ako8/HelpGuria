@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 import os
 from datetime import datetime
+
 import pytz
 from dotenv import load_dotenv
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 # Load environment variables
 load_dotenv()
@@ -21,6 +22,7 @@ db = SQLAlchemy(app)
 
 # Georgian timezone
 GEORGIA_TIMEZONE = pytz.timezone('Asia/Tbilisi')
+
 
 # Define the model
 class HelpRequest(db.Model):
@@ -50,6 +52,7 @@ class HelpRequest(db.Model):
             'ip_address': self.ip_address
         }
 
+
 # Initialize the database
 def init_db():
     with app.app_context():
@@ -59,13 +62,16 @@ def init_db():
         except Exception as e:
             print(f"Database initialization failed: {e}")
 
+
 # Initialize the database when the app starts
 init_db()
+
 
 @app.route('/')
 def index():
     """Home page with map for submitting help requests"""
     return render_template('index.html')
+
 
 @app.route('/submit_request', methods=['POST'])
 def submit_request():
@@ -86,8 +92,8 @@ def submit_request():
 
     try:
         new_request = HelpRequest(name=name, contact=contact, location=location,
-                                   latitude=latitude, longitude=longitude,
-                                   message=message, timestamp=timestamp, ip_address=ip_address)
+                                  latitude=latitude, longitude=longitude,
+                                  message=message, timestamp=timestamp, ip_address=ip_address)
         db.session.add(new_request)
         db.session.commit()
         return jsonify({"status": "success", "message": "Help request submitted successfully"})
@@ -95,10 +101,12 @@ def submit_request():
         db.session.rollback()
         return jsonify({"status": "error", "message": f"Database error: {e}"}), 500
 
+
 @app.route('/requests')
 def view_requests():
     """Page to view all help requests"""
     return render_template('requests.html')
+
 
 @app.route('/delete_request/<int:request_id>', methods=['DELETE'])
 def delete_request(request_id):
@@ -117,6 +125,7 @@ def delete_request(request_id):
         db.session.rollback()
         return jsonify({"status": "error", "message": f"Database error: {e}"}), 500
 
+
 @app.route('/api/requests')
 def get_requests():
     """API endpoint to get all help requests"""
@@ -126,10 +135,12 @@ def get_requests():
     except Exception as e:
         return jsonify({"status": "error", "message": f"Database error: {e}"}), 500
 
+
 @app.route('/health')
 def health_check():
     """Simple health check route"""
     return jsonify({"status": "ok", "message": "App is running!"})
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)
