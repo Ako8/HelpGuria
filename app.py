@@ -7,11 +7,10 @@ from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 # Load environment variables
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/requests.db?check_same_thread=False'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///requests.db'
 app.config['SECRET_KEY'] = 'ugyuvhjbguyfucgvhjyftycgvhhoijpjiugiytydrtyfyguihoj'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
