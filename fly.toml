@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for helpguria on 2025-02-25T22:57:11Z
+# fly.toml app configuration file generated for helpguria on 2025-02-25T23:29:29Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'helpguria'
-primary_region = 'ams'
+primary_region = 'fra'
 
 [build]
 
