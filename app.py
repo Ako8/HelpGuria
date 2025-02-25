@@ -11,10 +11,10 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'dasdasdasdasdasdasdadsajhj')
+app.secret_key = 'dasdasdasdasdasghjgyuvhjguiyfugvhytydfyguifyudtfuyguiyutyersxgfcgvhbjkhliyodasdadsajhj'
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///requests.db'
+# Database configurationapp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/requests.db?check_same_thread=False'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/requests.db?check_same_thread=False'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with the app
@@ -57,14 +57,14 @@ class HelpRequest(db.Model):
 def init_db():
     with app.app_context():
         try:
-            db.create_all()  # Create tables based on models
-            print("Database initialized successfully")
+            with db.engine.connect() as connection:
+                connection.execute("PRAGMA journal_mode=WAL")
+            db.create_all()
+            print("Database initialized successfully with WAL mode")
         except Exception as e:
             print(f"Database initialization failed: {e}")
 
 
-# Initialize the database when the app starts
-init_db()
 
 
 @app.route('/')
