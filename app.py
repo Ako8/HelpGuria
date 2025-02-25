@@ -124,7 +124,9 @@ def get_requests():
     """API endpoint to get all help requests"""
     try:
         conn = sqlite3.connect('instance/requests.db')
+        conn.execute('PRAGMA journal_mode=WAL;')
         conn.row_factory = sqlite3.Row
+
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM help_requests ORDER BY timestamp DESC')
         requests = [dict(row) for row in cursor.fetchall()]
