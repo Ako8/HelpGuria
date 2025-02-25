@@ -13,8 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'dasdasdasdasdasghjgyuvhjguiyfugvhytydfyguifyudtfuyguiyutyersxgfcgvhbjkhliyodasdadsajhj'
 
-# Database configurationapp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/requests.db?check_same_thread=False'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/requests.db?check_same_thread=False'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///requests.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with the app
@@ -143,4 +142,5 @@ def health_check():
 
 
 if __name__ == '__main__':
+    init_db()
     app.run(host='0.0.0.0', port=8080)
