@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/requests.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///requests.db'
 app.config['SECRET_KEY'] = 'ugyuvhjbguyfucgvhjyftycgvhhoijpjiugiytydrtyfyguihoj'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
